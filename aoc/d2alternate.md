@@ -440,7 +440,7 @@ let getNext ig from dir =
 
 _Code on [GitHub](https://github.com/zakaluka/fsaoc2016/blob/master/2/TwoCommonTest.fsx)._
 
-In the past, I have struggled quite a bit with properly implementing [FsCheck](https://github.com/fscheck/FsCheck) tests.  However, this time around, the combination of using FsCheck directly (as opposed to using it in combination with a testing library like [Fuchu](https://github.com/mausch/Fuchu) or [Xunit](https://xunit.github.io/)) and using it from F# script files (as opposed to compiled programs) made the experience must more pleasant and was a great learning experience.
+In the past, I have struggled quite a bit with properly implementing [FsCheck](https://github.com/fscheck/FsCheck) tests.  However, this time around, the combination of using FsCheck directly (as opposed to using it in combination with a testing library like [Fuchu](https://github.com/mausch/Fuchu) or [Xunit](https://xunit.github.io/)) and using it from F# script files (as opposed to compiled programs) made the experience much more pleasant and was a great learning experience.
 
 I wrote tests using [FsCheck](https://github.com/fscheck/FsCheck) to ensure that my implementations were correct - and I'm glad I did.  I found a number of elementary mistakes by having automated tests that I could easily run after each change to validate my results.  For each data structure, I wrote 6 tests:
 

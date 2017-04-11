@@ -392,7 +392,7 @@ D==&gt;D-&gt;U-&gt;B,</code></pre></div>
       | Some (dest,_) -&gt; dest</code></pre></div>
 <h2 id="testing">Testing</h2>
 <p><em>Code on <a href="https://github.com/zakaluka/fsaoc2016/blob/master/2/TwoCommonTest.fsx">GitHub</a>.</em></p>
-<p>In the past, I have struggled quite a bit with properly implementing <a href="https://github.com/fscheck/FsCheck">FsCheck</a> tests. However, this time around, the combination of using FsCheck directly (as opposed to using it in combination with a testing library like <a href="https://github.com/mausch/Fuchu">Fuchu</a> or <a href="https://xunit.github.io/">Xunit</a>) and using it from F# script files (as opposed to compiled programs) made the experience must more pleasant and was a great learning experience.</p>
+<p>In the past, I have struggled quite a bit with properly implementing <a href="https://github.com/fscheck/FsCheck">FsCheck</a> tests. However, this time around, the combination of using FsCheck directly (as opposed to using it in combination with a testing library like <a href="https://github.com/mausch/Fuchu">Fuchu</a> or <a href="https://xunit.github.io/">Xunit</a>) and using it from F# script files (as opposed to compiled programs) made the experience much more pleasant and was a great learning experience.</p>
 <p>I wrote tests using <a href="https://github.com/fscheck/FsCheck">FsCheck</a> to ensure that my implementations were correct - and I'm glad I did. I found a number of elementary mistakes by having automated tests that I could easily run after each change to validate my results. For each data structure, I wrote 6 tests:</p>
 <ol type="1">
 <li>A printout of the Day 2, Part 1 board (to be verified manually).</li>
