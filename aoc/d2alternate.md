@@ -294,7 +294,7 @@ let getNext (EL(b)) from dir =
 
 _Code on [GitHub](https://github.com/zakaluka/fsaoc2016/blob/master/2/TwoAdjList.fsx)_
 
-As opposed to an edge list, an adjacency list takes a `Vertex`-centric approach to representing graphs.  Many implementations of adjacency lists internally use a data structure like a hashmap or hastable, where the key is a `Vertex` and the value is a list of vertices (possibly with additional data) that the key can connect to.
+As opposed to an edge list, an adjacency list takes a `Vertex`-centric approach to representing graphs.  Many implementations of adjacency lists internally use a data structure like a hashmap or hashtable, where the key is a `Vertex` and the value is a list of vertices (possibly with additional data) that the key can connect to.
 
 For my implementation, I used two separate data structures to implement the adjacency lists - `dict` and `Map`.  The keys are `Vertex` instances and the values are lists of `Edge`s.
 
@@ -352,7 +352,7 @@ let getNext (AL(d,_)) from dir =
   | None -> from
 ```
 
-### Inductive Grap
+### Inductive Graph
 
 _Code on [GitHub](https://github.com/zakaluka/fsaoc2016/blob/master/2/TwoIndGraph.fsx)._
 
@@ -457,20 +457,58 @@ I was able to implement the last two tests because I had already solved Day 2's 
 
 ## Performance
 
-_Raw data on [GitHub](https://github.com/zakaluka/fsaoc2016/blob/master/2/TwoCommonTest.fsx)._
+_Raw data on [GitHub](https://github.com/zakaluka/blog/blob/master/aoc/d2runtimes.xlsx) - requires a program that can read XLSX files._
 
-After writing the five graph data structure implementations, I decided to run some basic performance tests on them.  Having a generalized solution framework allowed me to attribute all differences in runtimes to the specific data structure being used.  Without further ado, here are the results from using F# interactive's `#time` directive.
+After writing the five graph data structure implementations, I decided to run some basic performance tests on them.  Having a generalized solution framework allowed me to attribute all differences in runtimes to the specific data structure being used.
 
+To perform the tests in the most "unbiased" way possible, I ran each test 5 times and took the average of the results.  For each run, I executed the last 4 tests listed in the [Testing](#testing) section.
 
+Without further ado, here are the results from using F# interactive's `#time` directive.
+
+Algorithm|Real average|CPU average|Gen0 average|Gen1 average|Gen2 average
+:--------|-----------:|----------:|-----------:|-----------:|-----------:
+Adjacency List Dict|0.8452|0.8326|104.2|25.2|0
+Adjacency List Map|0.8684|0.8576|105.8|21.6|0
+Inductive Graph|0.9894|0.9852|136.2|33|0
+Adjacency Matrix|4.4932|4.4798|530.6|78.8|0.6
+Edge List|359.2024|359.1448|68896.6|61.4|3.6
+
+Table: _Average run-time and garbage collection performance of the algorithms, sorted by the `Real average` column in ascending order._
+
+I then took the Adjacency List Dict implementation as the baseline (since it was the fastest) and translated the same table into percentages.
+
+Algorithm|Real|CPU|Gen0|Gen1|Gen2
+:--------|---:|--:|---:|---:|---:
+Adjacency List Dict|100%|100%|100%|100%|-
+Adjacency List Map|103%|103%|102%|86%|-
+Inductive Graph|117%|118%|131%|131%|-
+Adjacency Matrix|532%|538%|509%|313%|100%
+Edge List|42499%|43135%|66120%|244%|600%
+
+Table: _Average run-time and garbage collection performance as a percentage, with Adjacency List Dict as the baseline._
+
+### Observations
+
+I was not surprised to find that the Edge List was the worst performer.  However, I was surprised by how much worse its performance was, even on a small board, than the next worst algorithm, the Adjacency Matrix.
+
+Along those same lines, I was surprised by how poor the performance of the Adjacency Matrix was.  However, I have a feeling that a more optimized implementation could do much better than my naive attempt. I believe my observation (as to my poor Adjacency Matrix writing skills) is accurate considering that it, along with the Adjacency List, is one of the most popular data structures for storing graphs.
+
+The inductive graph performed very well for a relatively new data structure that was intended, from the beginning, to be a new way of storing graphs in functional languages.  Its run-time performance was approximately 17% worse than the baseline and memory performance (based on garbage collection) was approximately 31% worse than the baseline. For someone who needs a graph data structure for more than just a `getNext` function, it could be a serious contender and warrants additional testing.
 
 ## Next steps
 
-I am satisfied with the results of this investigation into graph data structures in F#.
+I am satisfied with the results of this investigation into graph data structures in F#.  I was able to implement all algorithms in a functional manner within a generic framework. I believe I have accomplished the goal that I set out with, which was to find a more robust and 'realistic' way of representing graph-like structures in F#.
 
-However, here are some items that I did not complete and may be worth looking into:
+However, here are some items that I could not (or did not) complete and may be worth looking into:
 
 - Change the base data structures to enforce more of the expected properties / invariants.
 - Make the types for `Vertex`, `Edge`, `Direction`, etc. private and move them within their respective modules.
 - Test with larger / more complex boards to better understand performance.
 - Change the way boards are parsed from text files so that when the same character appears multiple times on a board, it is treated as the same Vertex (allowing for more complex board structures).
 - Change boards to allow 3D representations.
+- Remove copying from Adjacency Matrix's `create` function.
+- Implement (or find existing libraries) and test more functions of graph data structures.
+
+I will now be returning to blogging about my solutions for Advent of Code 2016 problems.  I am greatly looking forward to this because I have temporarily stopped solving more problems until I catch up with my blog posts.  Hopefully, I will be able to post my Day 3 solutions in the next week.
+
+See you next time!
