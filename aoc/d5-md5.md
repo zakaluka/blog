@@ -9,7 +9,7 @@ As my goal with the AOC challenges is to increase my knowledge of F#, I chose to
 - Implement my own version of the MD5 algorithm
 - Implement it functionally (no mutation, if possible)
 
-## Out-of-the-box implementation
+# Out-of-the-box implementation
 
 .NET has an out-of-the-box implementation of MD5, which can be accessed quite easily from F#.  It resides in the `System.Security.Cryptography` namespace.  Here is a function that takes in a `string` and outputs its hash as a `string`.
 
@@ -28,7 +28,7 @@ This helps immensely in two ways:
 - It makes it very easy to check whether my hash function is working correctly because its output must match the OOTB MD5 algorithm's output.
 - It provides a baseline against which to compare performance.
 
-## Planning the implementation
+# Planning the implementation
 
 First, let me just say that I have never implemented a "cryptographic" algorithm, such as a hash function, encryption algorithm, etc.  I knew that the implementation would be more difficult than a normal algorithm and so I spent a considerable amount of time reading the following resources.
 
@@ -119,7 +119,7 @@ leftrotate (x, c)
     return (x << c) binary or (x >> (32-c));
 ```
 
-### Considerations
+## Considerations
 
 There are a few concerns I had about this implementation.
 
@@ -129,13 +129,13 @@ There are a few concerns I had about this implementation.
 
 Initially, and I'm not sure why I thought this, I was under the assumption that Intel CPUs use the big-endian format. However, they actually use little-endian, which makes that consideration irrelevant.
 
-It took me an _embarassing_ amount of time to hunt down a bug where I forgot that the F# left-shift operator `<<<` is NOT a left-rotate operator. Once I narrowed down on the bug, it was easy enough to implement a function to perform the rotations.  However, this was a good lesson in never assuming anything when reading code - my eyes were just glazing over the `<<<` operator, even though the problem was staring me in the face.
+It took me an _embarrassing_ amount of time to hunt down a bug where I forgot that the F# left-shift operator `<<<` is NOT a left-rotate operator. Once I narrowed down on the bug, it was easy enough to implement a function to perform the rotations.  However, this was a good lesson in never assuming anything when reading code - my eyes were just glazing over the `<<<` operator, even though the problem was staring me in the face.
 
 Finally, I chose to store the values as 4 `uint32` integers.  This is similar to what the RFC authors, Wikipedia authors, and other implementations did on Rosetta Code. While F# does have the `uint64` type, it would have required translating all the 32-bit-based pseudo-code / code (introducing an element of risk) and I'm not sure what benefits, if any, it would have provided.
 
-### Mapping from Wikipedia to F\#
+## Mapping from Wikipedia to F\#
 
-I started my analysis and design phase by taking the pseudocode from Wikipedia and mapping it to how I wanted to break up my implementation.  I tried to use the same names for variables and, for consistency's sake, I ended up using the Wikipedia naming scheme.
+I started my analysis and design phase by taking the pseudo-code from Wikipedia and mapping it to how I wanted to break up my implementation.  I tried to use the same names for variables and, for consistency's sake, I ended up using the Wikipedia naming scheme.
 
 Oddly enough, Wikipedia uses different variable names compared to the RFC pseudo-code and I did not find a good reason for why the original writers did this.
 
@@ -207,9 +207,11 @@ Oddly enough, Wikipedia uses different variable names compared to the RFC pseudo
 |  |                                        |```                                     |
 +--+----------------------------------------+----------------------------------------+
 
-## Implementation
+Table: _Mapping from Wikipedia's pseudo-code to my F# implementation (function and value signatures)._
 
-### Step 1: Define the shift in each of the 64 rounds
+# Implementation
+
+## Step 1: Define the shift in each of the 64 rounds
 
 On the Wikipedia page, the per-round shift amounts are hard-coded as a 64-value `int` array.
 
@@ -231,7 +233,7 @@ let s =
 val s : int list
 ```
 
-### Step 2: Calculate the binary integer portion of integer sines
+## Step 2: Calculate the binary integer portion of integer sines
 
 Wikipedia provides two methods of calculating the constants that are based on the `sine` function.  First, here is the description from the RFC.
 
@@ -271,7 +273,7 @@ let k =
 val k : uint32 list
 ```
 
-### Step 3: Define the types
+## Step 3: Define the types
 
 I defined one new type for this problem, `MD5`.  This record holds an MD5 hash as 4 `uint32` values.
 
@@ -293,7 +295,7 @@ let initialMD5 =
   }
 ```
 
-### Step 4: Padding the message
+## Step 4: Padding the message
 
 The MD5 algorithm doesn't require a message of a certain length, but instead adds padding so that the final message length is a multiple of 512 bits (or 64 bytes).
 
@@ -308,7 +310,7 @@ append "0" bit until message length in bits ≡ 448 (mod 512)
 append original length in bits mod (2 pow 64) to message
 ```
 
-This part actually gave me some trouble becuase I thought that I had to add one bit (containing `1`) to my message in the MSB (most significant bit) slot, and then start appending `0`s or the message length immmediately after that.  That turns out not to be the case, and reading the RFC and other implementations on Rosetta Code provided a good solution to the problem.
+This part actually gave me some trouble because I thought that I had to add one bit (containing `1`) to my message in the MSB (most significant bit) slot, and then start appending `0`s or the message length immediately after that.  That turns out not to be the case, and reading the RFC and other implementations on Rosetta Code provided a good solution to the problem.
 
 Essentially, following the message, we need to add a `0x80` 16-bit word followed by the length (restricted to 8 bytes).  The intervening space, if any, is filled with `0` bytes.
 
@@ -340,7 +342,7 @@ val padMessage : msg:byte [] -> byte []
 
 This is the one part of the implementation that had the highest potential to be "impure".  Specifically, the part that constructs the padding.  However, F# array comprehensions removed the need to mutate an `array` to construct the padding before it is appended to the `msg`.
 
-### Step 7: The core of the main loop (Yes, I know this is out of order)
+## Step 7: The core of the main loop (Yes, I know this is out of order)
 
 The Wikipedia pseudo-code is written in an imperative manner where the main loops are encountered before we get to the meat of the hash construction algorithm.  However, in order to explain my construction, I will start by looking at the implementation for a single iteration of the "Main loop", and then build my way out from there.
 
@@ -420,7 +422,7 @@ val md5round : msg:uint32 [] -> MD5 -> i:int -> MD5
 
 The `md5round` function takes in the computed-so-far MD5 hash and an index, calculates the updated hash, and passes it back to the caller.
 
-### Step 6: Hash a single 512-bit chunk
+## Step 6: Hash a single 512-bit chunk
 
 This step actually implements the "Main loop", using the logic we coded for a single iteration of the loop.
 
@@ -465,15 +467,17 @@ let md5plus m (bs:byte[]) =
     |> Array.map (fun elt -> System.BitConverter.ToUInt32(elt, 0))
   let m' = List.fold (md5round msg) m [0..63]
   {a=m.a+m'.a; b=m.b+m'.b; c=m.c+m'.c; d=m.d+m'.d}
+
+val md5plus : m:MD5 -> bs:byte [] -> MD5
 ```
 
 `md5plus` expects the caller to pass in the initial value for the fold and the message that must be processed.
 
-`md5round`operates on a message (that will not change for a single 512-bit chunk), an MD5 value, and an index.  Those are the values that `md5plus` is using for the `fold`.
+`md5round` operates on a message (that will not change for a single 512-bit chunk), an MD5 value, and an index.  Those are the values that `md5plus` is using for the `fold`.
 
 At the end, `md5plus` passes back an updated MD5 hash which incorporates the changes derived from processing the given 512-bit chunk.
 
-### Step 5: Process the entire message and derive a single MD5 hash
+## Step 5: Process the entire message and derive a single MD5 hash
 
 The last step is to bring together all the individual pieces into a single algorithm that can:
 
@@ -504,6 +508,8 @@ let md5sum (msg: string) =
     |> (fun x -> System.BitConverter.GetBytes d |> Array.append x))
   |> Array.map (sprintf "%02X")
   |> Array.reduce ( + )
+
+val md5sum : msg:string -> string
 ```
 
 The main part of the algorithm is just the first 4 lines:
@@ -518,17 +524,43 @@ let md5sum (msg: string) =
 
 The rest of the function is devoted to converting the MD5 hash into a user-friendly representation.
 
-## Results
+# Testing
 
 Based on the testing I've done so far, this algorithm works correctly and produces exactly the same results as the OOTB MD5 algorithm.
 
 I first started by implementing the "standard" tests (originally specified in the RFC) and comparing the results with the OOTB algorithm.
 
-Then, I added a [FsCheck](https://github.com/fscheck/FsCheck) test that compared my algorithm against the OOTB one for 10,000 tests - all passed without any problems.
+Then, I added an [FsCheck](https://github.com/fscheck/FsCheck) test that compared my algorithm against the OOTB one for 10,000 tests - all passed without any problems.  Now that I've finally learned how to properly use FsCheck at a basic level, I'm starting to find it difficult to completely trust my results unless all the FsCheck tests pass.  I don't think that this is necessarily a bad thing, because it tends to make explicit assumptions that I made in my code (e.g. for my MD5 algorithm, I assume that the original message is an actual string and not just a `NULL`).
 
-### Performance
+# Performance
 
-_Raw data for performance measurements on [GitHub]()_
+_Raw data for performance measurements on [GitHub](https://github.com/zakaluka/blog/blob/master/aoc/d5runtimes.xlsx)._
 
 I measured performance by using the AOC Day 5, Part 1 problem, which computes thousands of MD5 hashes.  Here are the results, derived using F# interactive's `#time` directive.  I ran each test 3 times and averaged the results.
 
+| Algorithm  | Real   | CPU    | Gen0     | Gen1  | Gen2 |
+|:-----------|-------:|-------:|---------:|------:|-----:|
+| OOTB       | 53.37  | 53.37  | 6780.33  | 6.00  | 0.67 |
+| Functional | 172.79 | 172.76 | 34754.00 | 17.67 | 1.67 |
+
+Table: _Average run-time and garbage collection performance of the algorithms, in seconds_
+
+Here is the same chart, but with percentages.
+
+| Algorithm  | Real | CPU  | Gen0 | Gen1 | Gen2 |
+|:-----------|-----:|-----:|-----:|-----:|-----:|
+| OOTB       | 100% | 100% | 100% | 100% | 100% |
+| Functional | 324% | 324% | 513% | 294% | 250% |
+
+Table: _Average run-time and garbage collection performance of the algorithms as a percentage, with the OOTB algorithm as the baseline._
+
+Obviously, my functional version of this algorithm is a LOT worse than the OOTB implementation.
+
+# Lessons Learned
+
+1. Be extremely careful of assumptions when reading code.  Each character and symbol should be analyzed to ensure that it is appropriate for the task at hand.
+1. Define the `tee` function at the beginning of each project because it WILL be useful at some point.
+1. It's been a goal of mine to implement a "cryptographic" algorithm for a few years now, but I never found the time before.  I have to say that it was a lot of fun and I can't wait to do it again!
+    - Not strictly a lesson, unless that lesson is "have fun with hobby projects".
+
+See you next time!
